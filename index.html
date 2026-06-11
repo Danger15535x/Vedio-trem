@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OptiTrim | Instant Video Trimmer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-sky-600 text-white p-2 rounded-lg shadow-md shadow-sky-200">
+                    <i class="fa-solid fa-scissors text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">OptiTrim</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="bg-sky-100 text-sky-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-sky-200">
+                    <i class="fa-solid fa-bolt mr-1"></i> No Re-Encoding
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-12">
+        
+        <section class="text-center max-w-2xl mx-auto mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
+                Cut and Trim Video <span class="text-sky-600">Instantly</span>
+            </h1>
+            <p class="text-lg text-slate-600 leading-relaxed">
+                Trim the start, end, or middle of your video files with frame-level playback boundaries. Processing executes entirely locally within your browser context.
+            </p>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-xl shadow-slate-100 border border-slate-100 p-6 md:p-8 mb-16">
+            
+            <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-sky-500 rounded-xl p-12 text-center cursor-pointer bg-slate-50 hover:bg-sky-50/30 transition-all group">
+                <input type="file" id="file-input" accept="video/mp4, video/webm, video/ogg, video/quicktime" class="hidden">
+                <div class="text-sky-500 group-hover:scale-110 transition-transform duration-300 text-5xl mb-4">
+                    <i class="fa-solid fa-video"></i>
+                </div>
+                <p class="text-lg font-semibold text-slate-700 mb-1">Drag & drop your video file here</p>
+                <p class="text-sm text-slate-500 mb-4">or click to browse local files</p>
+                <span class="inline-block bg-white border border-slate-200 text-slate-600 font-medium text-xs px-3 py-1.5 rounded-full shadow-sm">
+                    Supports MP4, WebM, MOV
+                </span>
+            </div>
+
+            <div id="editor-workspace" class="hidden space-y-6">
+                
+                <div class="border border-slate-200 rounded-xl p-2 bg-slate-950 flex items-center justify-center relative shadow-inner max-h-[450px] overflow-hidden">
+                    <video id="video-preview" class="w-full max-h-[430px] object-contain rounded" controls></video>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500"><i class="fa-solid fa-sliders mr-1"></i> Boundary Adjustments</span>
+                        <div class="flex gap-4 text-xs font-mono font-bold text-slate-700">
+                            <span>Start Mark: <span id="lbl-start" class="text-sky-600">0.00s</span></span>
+                            <span>End Mark: <span id="lbl-end" class="text-sky-600">0.00s</span></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="input-start" class="block text-xs font-semibold text-slate-500 mb-1">Trim Start Time (seconds)</label>
+                            <input type="number" id="input-start" min="0" step="0.1" value="0" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500 font-mono">
+                        </div>
+                        <div>
+                            <label for="input-end" class="block text-xs font-semibold text-slate-500 mb-1">Trim End Time (seconds)</label>
+                            <input type="number" id="input-end" min="0" step="0.1" value="0" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500 font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-3 pt-4 border-t border-slate-100">
+                    <button id="trim-btn" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3.5 px-8 rounded-xl shadow-lg shadow-sky-100 transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-file-video"></i> Preview Trimmed Region
+                    </button>
+                    <button id="restart-btn" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-medium py-3.5 px-6 rounded-xl transition cursor-pointer">
+                        Choose Different Video
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="border-t border-slate-200 py-12">
+            <h2 class="text-2xl font-bold text-slate-900 text-center mb-10">High-Performance Processing Engine</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+                    <div class="text-sky-600 text-xl mb-3"><i class="fa-solid fa-bolt animate-pulse"></i></div>
+                    <h3 class="font-bold text-slate-800 mb-1">Instant Boundary Looping</h3>
+                    <p class="text-sm text-slate-600">The viewport clamps video timelines down smoothly to isolate the segments you want to check, before rendering.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+                    <div class="text-sky-600 text-xl mb-3"><i class="fa-solid fa-infinity"></i></div>
+                    <h3 class="font-bold text-slate-800 mb-1">Zero Quality Losses</h3>
+                    <p class="text-sm text-slate-600">Your clips loop and crop exactly using original native data streams, avoiding the artifacts caused by re-encoding pipelines.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+                    <div class="text-sky-600 text-xl mb-3"><i class="fa-solid fa-user-shield"></i></div>
+                    <h3 class="font-bold text-slate-800 mb-1">Secure Client Execution</h3>
+                    <p class="text-sm text-slate-600">Large media clips remain safely inside your browser session memory. No data is tracking or processed on external cloud servers.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-sm py-8 border-t border-slate-800 mt-auto">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <p>&copy; 2026 OptiTrim Studio. Real-time media pipelines execute inside secure sandboxed runtimes.</p>
+        </div>
+    </footer>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const editorWorkspace = document.getElementById('editor-workspace');
+        const videoPreview = document.getElementById('video-preview');
+
+        // Numeric boundary control hooks
+        const inputStart = document.getElementById('input-start');
+        const inputEnd = document.getElementById('input-end');
+        const lblStart = document.getElementById('lbl-start');
+        const lblEnd = document.getElementById('lbl-end');
+
+        const trimBtn = document.getElementById('trim-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        let videoDataUrl = null;
+
+        // Click target router paths
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Basic Drag/Drop implementations
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-sky-500', 'bg-sky-50/50'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-sky-500', 'bg-sky-50/50'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-sky-500', 'bg-sky-50/50');
+            if(e.dataTransfer.files.length > 0) handleIncomingVideo(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) handleIncomingVideo(e.target.files[0]);
+        });
+
+        function handleIncomingVideo(file) {
+            if (!file.type.match('video.*')) {
+                alert('Please provide a valid video asset structure (MP4, WebM, or MOV).');
+                return;
+            }
+
+            // Cleanup old tracking data to prevent system leaks
+            if (videoDataUrl) { URL.revokeObjectURL(videoDataUrl); }
+
+            videoDataUrl = URL.createObjectURL(file);
+            videoPreview.src = videoDataUrl;
+
+            // Transition UI displays blocks
+            dropZone.classList.add('hidden');
+            editorWorkspace.classList.remove('hidden');
+
+            // Wire initial values once video container meta registers successfully
+            videoPreview.onloadedmetadata = () => {
+                const maxDuration = videoPreview.duration;
+                
+                // Initialize input bounding ranges
+                inputStart.min = 0;
+                inputStart.max = maxDuration;
+                inputStart.value = 0;
+
+                inputEnd.min = 0;
+                inputEnd.max = maxDuration;
+                inputEnd.value = maxDuration.toFixed(2);
+
+                updateLabelDisplays();
+            };
+        }
+
+        // Event change listeners monitoring values updates
+        inputStart.addEventListener('input', () => {
+            // Prevent logical collisions where start bounds leap past endpoint limits
+            if (parseFloat(inputStart.value) >= parseFloat(inputEnd.value)) {
+                inputStart.value = (parseFloat(inputEnd.value) - 0.1).toFixed(2);
+            }
+            updateLabelDisplays();
+            videoPreview.currentTime = parseFloat(inputStart.value);
+        });
+
+        inputEnd.addEventListener('input', () => {
+            // Prevent logical collisions where end bounds drop behind start limits
+            if (parseFloat(inputEnd.value) <= parseFloat(inputStart.value)) {
+                inputEnd.value = (parseFloat(inputStart.value) + 0.1).toFixed(2);
+            }
+            updateLabelDisplays();
+            videoPreview.currentTime = parseFloat(inputEnd.value);
+        });
+
+        function updateLabelDisplays() {
+            lblStart.textContent = parseFloat(inputStart.value).toFixed(2) +
